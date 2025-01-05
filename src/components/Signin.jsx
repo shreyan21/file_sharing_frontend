@@ -33,25 +33,26 @@ const SignInForm = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: '100vh',  // Full viewport height
+        minHeight: '100vh',
         padding: 3,
         backgroundColor: '#f4f4f4',
-        boxSizing: 'border-box',  // Prevents box size issues
-        paddingTop: '60px', // Push the form down to avoid navbar overlap
-        overflow: 'hidden',  // Prevent scrolling
+        boxSizing: 'border-box',
+        paddingTop: '60px',
+        overflow: 'hidden',
       }}
     >
       <Box
         sx={{
           width: '100%',
-          maxWidth: '400px',  // Limit width of form
-          minWidth: '300px',  // Prevent it from becoming too narrow on mobile
+          maxWidth: '400px',
+          minWidth: '300px',
           padding: 3,
           borderRadius: 2,
           boxShadow: 3,
           backgroundColor: '#fff',
-          maxHeight: '90vh', // Ensure form fits within the viewport on mobile
-          overflow: 'auto', // In case content overflows, allow scroll only within form
+          maxHeight: '90vh',
+          overflow: 'hidden', 
+         // In case content overflows, allow scroll only within form
         }}
       >
         <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: 2 }}>

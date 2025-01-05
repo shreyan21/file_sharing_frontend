@@ -57,7 +57,7 @@ const SignupForm = () => {
   };
 
   // Handle form submission
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     localStorage.setItem('name', JSON.stringify(formData.name))
     localStorage.setItem('email', JSON.stringify(formData.email))
@@ -70,7 +70,7 @@ const SignupForm = () => {
     } else {
       // Handle form submission logic here (e.g., API call)
       alert('Form submitted');
-      await fetch('http://localhost:3200/user/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:formData.name,email:formData.email,phone:formData.phone,password:formData.password})})
+      await fetch('http://localhost:3200/user/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, password: formData.password }) })
     }
   };
 
@@ -83,6 +83,7 @@ const SignupForm = () => {
         minHeight: '100vh',
         padding: 2,
         backgroundColor: '#f4f4f4',
+        overflow: 'hidden',
       }}
     >
       <Box
@@ -93,6 +94,8 @@ const SignupForm = () => {
           borderRadius: 2,
           boxShadow: 3,
           backgroundColor: '#fff',
+          maxHeight: '90vh',
+          overflow: 'hidden',
         }}
       >
         <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: 2 }}>

@@ -38,6 +38,7 @@
 }
 body {
   padding-top: 64px; /* Adjust this based on your AppBar height */
+  overflow: hidden;
 }
 
 .signin-form {

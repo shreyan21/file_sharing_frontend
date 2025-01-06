@@ -19,9 +19,16 @@ const SignInForm = () => {
     setIsLoading(true);
     setErrorMessage('');
     const result = await fetch('http://localhost:3200/user/signin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+    if(result.status===404){
+      document.body.innerHTML=`Not registered`
+    }
+  else if(result.status===401){
+    document.body.innerHTML=`Invalid credentials`
+  }
     const data = await result.json();
+    
     localStorage.setItem("usertoken", JSON.stringify(data.token));
-    if (result.status >= 200) {
+    if (result.status === 200) {
       console.log(data);
       document.body.innerHTML = `Successfully logged in `;
     }

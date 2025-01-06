@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, Typography, Box, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -55,6 +56,7 @@ const SignupForm = () => {
     }
     setIsLoading(false);
   };
+  const navigate=useNavigate()
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -70,7 +72,11 @@ const SignupForm = () => {
     } else {
       // Handle form submission logic here (e.g., API call)
       alert('Form submitted');
-      await fetch('http://localhost:3200/user/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, password: formData.password }) })
+      // const result=await fetch('http://localhost:3200/user/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: formData.name, email: formData.email, phone: formData.phone, password: formData.password }) })
+      const result=await fetch('http://localhost:3200/user/add',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:formData.email})})
+      if(result.status===200){
+        navigate('/signup/verify')
+      }
     }
   };
 

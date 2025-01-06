@@ -1,28 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../VerificationCodeForm.css';
+import { useNavigate } from 'react-router-dom';
 
 const VerificationCodeForm = () => {
     const [code, setCode] = useState('');
     const [isVerified, setIsVerified] = useState(false);
     const [error, setError] = useState('');
-
+    const navigate = useNavigate()
     const handleInputChange = (e) => {
         setCode(e.target.value);
     };
+    useEffect(() => {
+        const cleanupLocalStorage = () => {
+            localStorage.removeItem('name');
+            localStorage.removeItem('email');
+            localStorage.removeItem('phone');
+            localStorage.removeItem('password');
+            console.log('LocalStorage cleared.');
+        };
 
+        // Listen for when the user navigates away or closes the page (unload event)
+        const handleBeforeUnload = () => {
+            cleanupLocalStorage();
+        };
+
+        // Add event listener for page unload
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // Cleanup event listener when the component is unmounted
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [navigate]);  
     const handleVerify = async () => {
         if (code.length === 6) {
             // Replace this logic with an actual backend API call
-            const result = await fetch('http://localhost:3200/user/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify() })
+            const email = JSON.parse(localStorage.getItem('email'))
+            const name = JSON.parse(localStorage.getItem('name'))
+            const password = JSON.parse(localStorage.getItem('password'))
+            let phone
+            if (localStorage.getItem('phone')) {
+                phone = JSON.parse(localStorage.getItem('phone'))
+            }
+            const result = await fetch('http://localhost:3200/user/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password, phone, verification_code: code }) })
             if (result.status !== 201) {
-                localStorage.clear()
+                // localStorage.clear()
                 const result1 = await result.json()
                 setError(result1.message);
                 setIsVerified(false)
 
             }
-            setIsVerified(true);
-            setError('');
+            else {
+                setIsVerified(true);
+                localStorage.clear()
+                setError('');
+            }
         } else {
             setError('Please enter a valid 6-digit verification code.');
         }

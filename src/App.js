@@ -27,6 +27,7 @@ function App() {
       <UserContext.Provider value={{ user, setUser }}>
         {/* Your app components */}
         <ResponsiveAppBar setShow={setShow} />
+       
         {/* The rest of your components */}
       </UserContext.Provider>
 

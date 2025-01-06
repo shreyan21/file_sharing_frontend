@@ -25,10 +25,10 @@ const SignInForm = () => {
   else if(result.status===401){
     document.body.innerHTML=`Invalid credentials`
   }
-    const data = await result.json();
-    
-    localStorage.setItem("usertoken", JSON.stringify(data.token));
-    if (result.status === 200) {
+  if (result.status === 200) {
+      const data = await result.json();
+      
+      localStorage.setItem("usertoken", JSON.stringify(data.token));
       console.log(data);
       document.body.innerHTML = `Successfully logged in `;
     }

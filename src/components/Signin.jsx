@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid, Typography, Box, CircularProgress, FormHelperText } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
 
 const SignInForm = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +15,7 @@ const SignInForm = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+  const navigate=useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +33,9 @@ const SignInForm = () => {
       
       localStorage.setItem("usertoken", JSON.stringify(data.token));
       console.log(data);
-      document.body.innerHTML = `Successfully logged in `;
+      navigate('/')
+      // document.body.innerHTML = `Successfully logged in `;
+
     }
   };
 

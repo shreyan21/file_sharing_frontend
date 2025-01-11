@@ -9,33 +9,29 @@ import VerificationCodeForm from './components/VerifyPage.jsx';
 
 function App() {
   // Initialize user state from localStorage
-  const storedUser = localStorage.getItem('usertoken');
-  const initialUser = storedUser ? JSON.parse(storedUser) : null;
-  const [user, setUser] = useState(initialUser);
-  const [show, setShow] = useState(false)
-  // Trigger useEffect when user state changes to reflect the updated localStorage
+  const [usertoken, setUserToken] = useState(localStorage.getItem('usertoken') ? JSON.parse(localStorage.getItem('usertoken')) : null)
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('usertoken', JSON.stringify(user)); // Save user to localStorage when it changes
+    if (usertoken) {
+      localStorage.setItem('usertoken', JSON.stringify(usertoken));
     } else {
-      localStorage.removeItem('usertoken'); // Remove token from localStorage if user logs out
+      localStorage.removeItem('usertoken');
     }
-  }, [user]); // Dependency array makes sure it triggers when `user` state changes
+  }, [usertoken]);
 
   return (
     <>
-      <UserContext.Provider value={{ user, setUser }}>
+      <UserContext.Provider value={{ usertoken, setUserToken }}>
         {/* Your app components */}
-        <ResponsiveAppBar setShow={setShow} />
-       
-        {/* The rest of your components */}
-      </UserContext.Provider>
+        <ResponsiveAppBar />
 
-      <Routes>
-        <Route exact path='/signin' element={<SignInForm />} />
-        <Route exact path='/signup' element={<SignupForm />} />
-        <Route path='/signup/verify' element={<VerificationCodeForm/>}/>
-      </Routes>
+        {/* The rest of your components */}
+
+        <Routes>
+          <Route exact path='/signin' element={<SignInForm />} />
+          <Route exact path='/signup' element={<SignupForm />} />
+          <Route path='/signup/verify' element={<VerificationCodeForm />} />
+        </Routes>
+      </UserContext.Provider>
     </>
   );
 }

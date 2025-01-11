@@ -146,7 +146,6 @@ const SignupForm = () => {
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                required
               />
             </Grid>
 

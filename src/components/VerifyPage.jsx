@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import '../VerificationCodeForm.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,28 +10,7 @@ const VerificationCodeForm = () => {
     const handleInputChange = (e) => {
         setCode(e.target.value);
     };
-    useEffect(() => {
-        const cleanupLocalStorage = () => {
-            localStorage.removeItem('name');
-            localStorage.removeItem('email');
-            localStorage.removeItem('phone');
-            localStorage.removeItem('password');
-            console.log('LocalStorage cleared.');
-        };
-
-        // Listen for when the user navigates away or closes the page (unload event)
-        const handleBeforeUnload = () => {
-            cleanupLocalStorage();
-        };
-
-        // Add event listener for page unload
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // Cleanup event listener when the component is unmounted
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, [navigate]);  
+   
     const handleVerify = async () => {
         if (code.length === 6) {
             // Replace this logic with an actual backend API call
@@ -54,6 +33,7 @@ const VerificationCodeForm = () => {
                 setIsVerified(true);
                 localStorage.clear()
                 setError('');
+                navigate('/')
             }
         } else {
             setError('Please enter a valid 6-digit verification code.');

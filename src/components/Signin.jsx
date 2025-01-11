@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { TextField, Button, Grid, Typography, Box, CircularProgress, FormHelperText } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../contexts/usercontext.js';
 
 
 const SignInForm = () => {
@@ -10,32 +11,32 @@ const SignInForm = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const{setUserToken}=useContext(UserContext)
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  const navigate=useNavigate()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage('');
     const result = await fetch('http://localhost:3200/user/signin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
-    if(result.status===404){
-      document.body.innerHTML=`Not registered`
+    if (result.status === 404) {
+      setIsLoading(false)
+      setErrorMessage('Not registered')
     }
-  else if(result.status===401){
-    document.body.innerHTML=`Invalid credentials`
-  }
-  if (result.status === 200) {
+    else if (result.status === 401) {
+      setIsLoading(false)
+      setErrorMessage('Invalid credentials')
+    }
+    if (result.status === 200) {
       const data = await result.json();
-      
-      localStorage.setItem("usertoken", JSON.stringify(data.token));
-      console.log(data);
-      navigate('/')
-      // document.body.innerHTML = `Successfully logged in `;
 
+     setUserToken(data.token)
+      navigate('/')
     }
   };
 
@@ -63,8 +64,8 @@ const SignInForm = () => {
           boxShadow: 3,
           backgroundColor: '#fff',
           maxHeight: '90vh',
-          overflow: 'hidden', 
-         // In case content overflows, allow scroll only within form
+          overflow: 'hidden',
+          // In case content overflows, allow scroll only within form
         }}
       >
         <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: 2 }}>

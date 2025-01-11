@@ -21,8 +21,8 @@ const pages = ['About', 'Contacts'];
 const settings = ['Profile', 'Logout'];
 const guestSettings = ['Sign In', 'Sign Up'];
 
-function ResponsiveAppBar(props) {
-  const { user, setUser } = useContext(UserContext);  // Get user context to handle login/logout state
+function ResponsiveAppBar() {
+  const { usertoken, setUserToken } = useContext(UserContext);  // Get user context to handle login/logout state
   const navigate = useNavigate();
 
   const [anchorElNav, setAnchorElNav] = React.useState(null);
@@ -44,25 +44,22 @@ function ResponsiveAppBar(props) {
     setAnchorElUser(null);
   };
 
+  
   const handleMenuClick = (setting) => {
     handleCloseUserMenu();
     switch (setting) {
       case 'Profile':
-        props.setShow(true);
         navigate('/userprofile');
         break;
       case 'Logout':
         // Perform logout logic here
-        setUser(null);
-        localStorage.clear();
+        setUserToken(null);
         navigate('/');
         break;
       case 'Sign In':
-        props.setShow(true);
         navigate('/signin');
         break;
       case 'Sign Up':
-        props.setShow(true);
         navigate('/signup');
         break;
       default:
@@ -167,7 +164,7 @@ function ResponsiveAppBar(props) {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {(user ? settings : guestSettings).map((setting) => (
+              {(usertoken ? settings : guestSettings).map((setting) => (
                 <MenuItem key={setting} onClick={() => handleMenuClick(setting)}>
                   <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>

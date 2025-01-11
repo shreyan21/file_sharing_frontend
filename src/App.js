@@ -6,6 +6,7 @@ import SignupForm from './components/Signup.jsx';
 import { UserContext } from './contexts/usercontext.js';
 import { Routes, Route } from 'react-router-dom';
 import VerificationCodeForm from './components/VerifyPage.jsx';
+import FilePage from './components/Files.jsx';
 
 function App() {
   // Initialize user state from localStorage
@@ -23,9 +24,7 @@ function App() {
       <UserContext.Provider value={{ usertoken, setUserToken }}>
         {/* Your app components */}
         <ResponsiveAppBar />
-
-        {/* The rest of your components */}
-
+         {usertoken&&<FilePage/>}
         <Routes>
           <Route exact path='/signin' element={<SignInForm />} />
           <Route exact path='/signup' element={<SignupForm />} />

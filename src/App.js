@@ -11,20 +11,24 @@ import FilePage from './components/Files.jsx';
 function App() {
   // Initialize user state from localStorage
   const [usertoken, setUserToken] = useState(localStorage.getItem('usertoken') ? JSON.parse(localStorage.getItem('usertoken')) : null)
+
   useEffect(() => {
+    // You can put any logic you want to trigger when usertoken changes
+    console.log('User token has changed:', usertoken);
+
+    // Optionally save the token to localStorage whenever it changes
     if (usertoken) {
       localStorage.setItem('usertoken', JSON.stringify(usertoken));
     } else {
       localStorage.removeItem('usertoken');
     }
   }, [usertoken]);
-
   return (
     <>
       <UserContext.Provider value={{ usertoken, setUserToken }}>
         {/* Your app components */}
         <ResponsiveAppBar />
-         {usertoken&&<FilePage/>}
+        {usertoken && <FilePage />}
         <Routes>
           <Route exact path='/signin' element={<SignInForm />} />
           <Route exact path='/signup' element={<SignupForm />} />

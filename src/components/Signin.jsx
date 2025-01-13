@@ -36,7 +36,7 @@ const SignInForm = () => {
       const data = await result.json();
 
      setUserToken(data.token)
-      navigate('/')
+     navigate('/')
     }
   };
 

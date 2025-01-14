@@ -4,7 +4,6 @@ import { UserContext } from '../contexts/usercontext.js';
 
 const FilePage = () => {
   const [files, setFiles] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState(null); // To hold the actual content of the file
   const [loading, setLoading] = useState(true);
   const [loadingContent, setLoadingContent] = useState(false);
@@ -39,13 +38,14 @@ const FilePage = () => {
                 method: 'GET',
                 headers: { 'Authorization': `${usertoken}` },
             });
-
+          const blob= await response.blob()
+           const url= URL.createObjectURL(blob)
             const contentType = response.headers.get('Content-Type');
-
+         
             if (contentType && contentType.startsWith('image/')) {
-                // Handle image files by showing the image URL
-                const imageURL = `http://localhost:3200/uploads/${file.name}`; // Adjust this URL accordingly
-                setFileContent(<img src={imageURL} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%' }} />);
+                
+                setFileContent(<img src={url} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%' }} />);
+                
             } else if (contentType === 'text/plain') {
                 // Handle text files
                 const text = await response.text();
@@ -75,7 +75,7 @@ const FilePage = () => {
 
 
 
-  
+
 
   const handleModalClose = () => setFileContent(null);
 

@@ -20,6 +20,7 @@ function App() {
     if (usertoken) {
       localStorage.setItem('usertoken', JSON.stringify(usertoken));
     } else {
+      localStorage.removeItem('files')
       localStorage.removeItem('usertoken');
     }
   }, [usertoken]);

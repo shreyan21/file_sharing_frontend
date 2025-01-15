@@ -26,7 +26,7 @@ const FilePage = () => {
       try {
         const response = await fetch('http://localhost:3200/file/showfiles', {
           method: 'GET',
-          headers: { 'Authorization': `${usertoken}` },
+          headers: { 'Authorization': `${usertoken} `},
         });
         const data = await response.json();
         setFiles(data.files || []);
@@ -87,7 +87,7 @@ const FilePage = () => {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const contentType = response.headers.get('Content-Type');
-
+        
         if (contentType && contentType.startsWith('image/')) {
           setFileContent(<img src={url} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 8 }} />);
         } else if (contentType === 'text/plain') {
@@ -154,7 +154,7 @@ const FilePage = () => {
                   {file.name}
                 </Typography>
                 <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
-                  {file.isDirectory ? 'Directory' : `Size: ${file.size} bytes`}
+                  {file.isDirectory ? 'Directory' :` Size: ${file.size} bytes`}
                 </Typography>
               </CardContent>
 

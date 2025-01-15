@@ -87,7 +87,7 @@ function ResponsiveAppBar() {
               textDecoration: 'none',
             }}
           >
-            Notebook
+            
           </Typography>
 
           {/* Responsive Menu Icon (for small screens) */}
@@ -106,7 +106,7 @@ function ResponsiveAppBar() {
               id="menu-appbar"
               anchorEl={anchorElNav}
               anchorOrigin={{
-                vertical: 'bottom',
+                vertical: 'bottom', 
                 horizontal: 'left',
               }}
               keepMounted

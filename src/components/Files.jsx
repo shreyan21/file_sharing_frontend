@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Grid, Card, CardContent, Typography, Modal, CircularProgress, Button } from '@mui/material';
+import { Box, Grid, Card, CardContent, Typography, Modal, CircularProgress, Button, IconButton, Tooltip } from '@mui/material';
 import { UserContext } from '../contexts/usercontext.js';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import { PermissionContext } from '../contexts/permissioncontext.js';
 
 const FilePage = () => {
   const [files, setFiles] = useState([]);
@@ -9,6 +12,7 @@ const FilePage = () => {
   const [loadingContent, setLoadingContent] = useState(false);
   const [previewContent, setPreviewContent] = useState({});
   const { usertoken } = useContext(UserContext);
+  const { permission } = useContext(PermissionContext);
 
   useEffect(() => {
     const loadFilesFromLocalStorage = () => {
@@ -26,7 +30,7 @@ const FilePage = () => {
       try {
         const response = await fetch('http://localhost:3200/file/showfiles', {
           method: 'GET',
-          headers: { 'Authorization': `${usertoken} `},
+          headers: { 'Authorization': `${usertoken}` },
         });
         const data = await response.json();
         setFiles(data.files || []);
@@ -41,7 +45,6 @@ const FilePage = () => {
 
     const loadFilePreviews = async (files) => {
       const previews = {};
-
       for (const file of files) {
         if (!file.isDirectory) {
           try {
@@ -52,7 +55,6 @@ const FilePage = () => {
             const blob = await response.blob();
             const contentType = response.headers.get('Content-Type');
 
-            // Generate a small preview for images, text, and PDFs
             const url = URL.createObjectURL(blob);
             if (contentType && contentType.startsWith('image/')) {
               previews[file.name] = <img src={url} alt={file.name} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 4 }} />;
@@ -69,50 +71,66 @@ const FilePage = () => {
           }
         }
       }
-
       setPreviewContent(previews);
     };
 
     loadFilesFromLocalStorage();
   }, [usertoken]);
 
-  const handleFileDoubleClick = async (file) => {
-    if (!file.isDirectory) {
-      setLoadingContent(true);
-      try {
-        const response = await fetch(`http://localhost:3200/file/showfile/${file.name}`, {
-          method: 'GET',
-          headers: { 'Authorization': `${usertoken}` },
-        });
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const contentType = response.headers.get('Content-Type');
-        
-        if (contentType && contentType.startsWith('image/')) {
-          setFileContent(<img src={url} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 8 }} />);
-        } else if (contentType === 'text/plain') {
-          const text = await response.text();
-          setFileContent(<pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', color: '#333' }}>{text}</pre>);
-        } else if (contentType === 'application/pdf') {
-          const pdfURL = URL.createObjectURL(blob);
-          setFileContent(
-            <object data={pdfURL} type="application/pdf" width="100%" height="600px" style={{ borderRadius: 8 }}>
-              <p>Your browser does not support PDFs. <a href={pdfURL} download>Download PDF</a></p>
-            </object>
-          );
-        } else {
-          setFileContent('Unsupported file type for preview');
-        }
-      } catch (error) {
-        console.error('Error fetching file content:', error);
-        setFileContent('Error fetching file content.');
-      } finally {
-        setLoadingContent(false);
+  const handleFilePreview = async (file) => {
+    setLoadingContent(true);
+    try {
+      const response = await fetch(`http://localhost:3200/file/showfile/${file.name}`, {
+        method: 'GET',
+        headers: { 'Authorization': `${usertoken}` },
+      });
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const contentType = response.headers.get('Content-Type');
+
+      if (contentType && contentType.startsWith('image/')) {
+        setFileContent(<img src={url} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 8 }} />);
+      } else if (contentType === 'text/plain') {
+        const text = await response.text();
+        setFileContent(<pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', color: '#333' }}>{text}</pre>);
+      } else if (contentType === 'application/pdf') {
+        const pdfURL = URL.createObjectURL(blob);
+        setFileContent(
+          <object data={pdfURL} type="application/pdf" width="100%" height="600px" style={{ borderRadius: 8 }}>
+            <p>Your browser does not support PDFs. <a href={pdfURL} download>Download PDF</a></p>
+          </object>
+        );
+      } else {
+        setFileContent('Unsupported file type for preview');
       }
+    } catch (error) {
+      console.error('Error fetching file content:', error);
+      setFileContent('Error fetching file content.');
+    } finally {
+      setLoadingContent(false);
     }
   };
 
   const handleModalClose = () => setFileContent(null);
+
+  const checkPermission = (fileName) => {
+    // if (!permissionObject || !Array.isArray(permissionObject)) {
+    //   return false; // permissionObject is undefined or not an array
+    // }
+
+    // const permission = permissionObject.find((perm) => perm.file_name === fileName);
+    // return permission ? permission.can_edit : false; // Return can_edit if permission exists, otherwise false
+
+    for (const element of permission) {
+      if (element.file_name === fileName) {
+        if (element.can_edit) {
+          return true
+        }
+        return false
+      }
+      return false
+    }
+  };
 
   if (loading) {
     return (
@@ -136,8 +154,9 @@ const FilePage = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
                 width: 300,
-                height: 250,
+                height: 300,
                 boxShadow: 3,
                 borderRadius: 2,
                 backgroundColor: '#fff',
@@ -146,21 +165,55 @@ const FilePage = () => {
                 '&:hover': { transform: 'scale(1.05)' },
                 '&:active': { transform: 'scale(0.98)' },
                 overflow: 'hidden',
+                padding: 2,
               }}
-              onDoubleClick={() => handleFileDoubleClick(file)}
             >
               <CardContent sx={{ textAlign: 'center', flex: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 2, color: '#333' }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: 2, color: '#333' }}>
                   {file.name}
                 </Typography>
                 <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
-                  {file.isDirectory ? 'Directory' :` Size: ${file.size} bytes`}
+                  {file.isDirectory ? 'Directory' : ` Size: ${file.size} bytes`}
                 </Typography>
               </CardContent>
 
-              {/* File Preview */}
-              <Box sx={{ padding: 2, height: 100, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {/* File Preview (centered vertically and horizontally) */}
+              <Box
+                sx={{
+                  padding: 2,
+                  height: 120,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                  overflow: 'hidden',
+                }}
+              >
                 {previewContent[file.name] || <Typography variant="body2" color="textSecondary">Loading Preview...</Typography>}
+              </Box>
+
+              {/* Eye and Edit Icons positioned at Top-Right corner */}
+              <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 1 }}>
+                <IconButton
+                  color="default"
+                  onClick={() => handleFilePreview(file)}
+                  sx={{ fontSize: 20 }}
+                >
+                  <VisibilityIcon sx={{ color: 'black' }} />
+                </IconButton>
+
+                {/* Tooltip for Edit button when permission is denied */}
+                <Tooltip title="You don't have permission to edit this file" disableInteractive>
+                  <span>
+                    <IconButton
+                      color="default"
+                      sx={{ fontSize: 20 }}
+                      disabled={checkPermission(file.name)}
+                    >
+                      <EditIcon sx={{ color: 'black' }} />
+                    </IconButton>
+                  </span>
+                </Tooltip>
               </Box>
             </Card>
           </Grid>
@@ -200,7 +253,7 @@ const FilePage = () => {
             )}
           </Box>
           <Button variant="contained" color="primary" fullWidth onClick={handleModalClose} sx={{ marginTop: 2 }}>
-            Close Preview
+            Close
           </Button>
         </Box>
       </Modal>

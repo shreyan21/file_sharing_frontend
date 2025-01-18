@@ -3,7 +3,6 @@
 }
 
 .App-logo {
-  height: 40vmin;
   pointer-events: none;
 }
 
@@ -12,14 +11,15 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+@media (min-width: 1536px) {
+  .css-11l5t4l-MuiGrid-root {
+    flex-grow: 0;
+         max-width: 0;}
+  }
+  
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
 }
@@ -36,16 +36,11 @@
     transform: rotate(360deg);
   }
 }
-body {
-  padding-top: 64px; /* Adjust this based on your AppBar height */
-  overflow: hidden;
+.card{
+  margin-top: 5rem;
+  height: 40vh;
 }
 
-.signin-form {
-  margin-top: 80px; /* Adjust this based on your navbar height */
-  padding: 20px;
-  /* You can also add more styles to center the form or style it better */
-}
 
 /* Optional: If you want the form to be centered on the page */
 .signin-form form {

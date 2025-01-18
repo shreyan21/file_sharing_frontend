@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, Grid, Card, CardContent, Typography, Modal, CircularProgress, Button, IconButton, Tooltip } from '@mui/material';
+import { Box, Grid, CircularProgress, Typography, Button, Card, IconButton, Tooltip } from '@mui/material';
 import { UserContext } from '../contexts/usercontext.js';
+import { PermissionContext } from '../contexts/permissioncontext.js';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
-import { PermissionContext } from '../contexts/permissioncontext.js';
+import myimage from './placeholder-image.jpg';
 
 const FilePage = () => {
   const [files, setFiles] = useState([]);
@@ -11,30 +12,33 @@ const FilePage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingContent, setLoadingContent] = useState(false);
   const [previewContent, setPreviewContent] = useState({});
+
   const { usertoken } = useContext(UserContext);
   const { permission } = useContext(PermissionContext);
 
   useEffect(() => {
-    const loadFilesFromLocalStorage = () => {
+    // Load files from localStorage or fetch from the server
+    const loadFiles = async () => {
       const storedFiles = localStorage.getItem('files');
       if (storedFiles) {
         setFiles(JSON.parse(storedFiles));
-        loadFilePreviews(JSON.parse(storedFiles)); // Load previews from local storage
+        await loadFilePreviews(JSON.parse(storedFiles));
         setLoading(false);
       } else {
-        fetchFiles();
+        await fetchFiles();
       }
     };
 
+    // Fetch files from the server
     const fetchFiles = async () => {
       try {
         const response = await fetch('http://localhost:3200/file/showfiles', {
           method: 'GET',
-          headers: { 'Authorization': `${usertoken}` },
+          headers: { 'Authorization': usertoken },
         });
         const data = await response.json();
         setFiles(data.files || []);
-        localStorage.setItem('files', JSON.stringify(data.files)); // Store files in localStorage
+        localStorage.setItem('files', JSON.stringify(data.files));
         await loadFilePreviews(data.files);
       } catch (error) {
         console.error('Error fetching files:', error);
@@ -43,6 +47,7 @@ const FilePage = () => {
       }
     };
 
+    // Load file previews (images, text, PDF) from the server
     const loadFilePreviews = async (files) => {
       const previews = {};
       for (const file of files) {
@@ -50,21 +55,21 @@ const FilePage = () => {
           try {
             const response = await fetch(`http://localhost:3200/file/showfile/${file.name}`, {
               method: 'GET',
-              headers: { 'Authorization': `${usertoken}` },
+              headers: { 'Authorization': usertoken },
             });
             const blob = await response.blob();
             const contentType = response.headers.get('Content-Type');
-
             const url = URL.createObjectURL(blob);
+
             if (contentType && contentType.startsWith('image/')) {
               previews[file.name] = <img src={url} alt={file.name} style={{ width: '100%', height: 'auto', objectFit: 'cover', borderRadius: 4 }} />;
             } else if (contentType === 'text/plain') {
               const text = await response.text();
-              previews[file.name] = <Typography variant="body2" color="textSecondary" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>{text.substring(0, 100)}...</Typography>;
+              previews[file.name] = <object data={text} type="application/pdf" width="100%" height="200px" />;
             } else if (contentType === 'application/pdf') {
-              previews[file.name] = <object data={url} type="application/pdf" width="100%" height="200px"></object>;
+              previews[file.name] = <object data={url} type="application/pdf" width="100%" height="200px" />;
             } else {
-              previews[file.name] = <Typography variant="body2" color="textSecondary">Preview Unavailable</Typography>;
+              previews[file.name] = <img src={myimage} alt={file.name} style={{ width: '100%', height: '238px', objectFit: 'cover', borderRadius: 4 }} />;
             }
           } catch (error) {
             previews[file.name] = <Typography variant="body2" color="textSecondary">Error loading preview</Typography>;
@@ -74,15 +79,16 @@ const FilePage = () => {
       setPreviewContent(previews);
     };
 
-    loadFilesFromLocalStorage();
-  }, [usertoken]);
+    loadFiles();
+  }, [usertoken,files]);
 
+  // Handle file preview logic
   const handleFilePreview = async (file) => {
     setLoadingContent(true);
     try {
       const response = await fetch(`http://localhost:3200/file/showfile/${file.name}`, {
         method: 'GET',
-        headers: { 'Authorization': `${usertoken}` },
+        headers: { 'Authorization': usertoken },
       });
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -95,11 +101,7 @@ const FilePage = () => {
         setFileContent(<pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', color: '#333' }}>{text}</pre>);
       } else if (contentType === 'application/pdf') {
         const pdfURL = URL.createObjectURL(blob);
-        setFileContent(
-          <object data={pdfURL} type="application/pdf" width="100%" height="600px" style={{ borderRadius: 8 }}>
-            <p>Your browser does not support PDFs. <a href={pdfURL} download>Download PDF</a></p>
-          </object>
-        );
+        setFileContent(<object data={pdfURL} type="application/pdf" width="100%" height="600px" style={{ borderRadius: 8 }} />);
       } else {
         setFileContent('Unsupported file type for preview');
       }
@@ -110,28 +112,38 @@ const FilePage = () => {
       setLoadingContent(false);
     }
   };
-
-  const handleModalClose = () => setFileContent(null);
-
-  const checkPermission = (fileName) => {
-    // if (!permissionObject || !Array.isArray(permissionObject)) {
-    //   return false; // permissionObject is undefined or not an array
-    // }
-
-    // const permission = permissionObject.find((perm) => perm.file_name === fileName);
-    // return permission ? permission.can_edit : false; // Return can_edit if permission exists, otherwise false
-
-    for (const element of permission) {
-      if (element.file_name === fileName) {
-        if (element.can_edit) {
-          return true
-        }
-        return false
+  const removeFile = async (name) => {
+    try {
+      const result = await fetch(`http://localhost:3200/file/removefile/${name}`, { method: 'DELETE', headers: { 'Authorization': `${usertoken}` } })
+      if (result.status === 200) {
+          const data=await result.json()
+          const deletedFile=data.deletedFile
+         let copiedFiles=[...files]
+         const index=copiedFiles.findIndex(file=>file.name===deletedFile)
+         copiedFiles.splice(index,1)
+         localStorage.setItem('files',JSON.stringify(copiedFiles))
+         setFiles(copiedFiles)
+          
       }
-      return false
     }
+    catch (e) {
+
+    }
+  }
+  // Check if the user has permission to edit the file
+  const checkPermission = (fileName) => {
+    for (const perm of permission) {
+      if (perm.file_name === fileName) {
+        return perm.can_edit;
+      }
+    }
+    return false;
   };
 
+  // Handle modal close
+  const handleModalClose = () => setFileContent(null);
+
+  // Loading Spinner
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -141,123 +153,20 @@ const FilePage = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f4f8', padding: 3 }}>
-      <Typography variant="h4" sx={{ marginTop: 6, marginBottom: 4, fontWeight: 'bold', color: '#333' }}>
-        File Management
-      </Typography>
-
-      <Grid container spacing={3} justifyContent="center">
-        {files.map((file) => (
-          <Grid item xs={12} sm={6} md={4} key={file.name}>
-            <Card
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 300,
-                height: 300,
-                boxShadow: 3,
-                borderRadius: 2,
-                backgroundColor: '#fff',
-                position: 'relative',
-                transition: 'transform 0.3s ease',
-                '&:hover': { transform: 'scale(1.05)' },
-                '&:active': { transform: 'scale(0.98)' },
-                overflow: 'hidden',
-                padding: 2,
-              }}
-            >
-              <CardContent sx={{ textAlign: 'center', flex: 1 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: 2, color: '#333' }}>
-                  {file.name}
-                </Typography>
-                <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
-                  {file.isDirectory ? 'Directory' : ` Size: ${file.size} bytes`}
-                </Typography>
-              </CardContent>
-
-              {/* File Preview (centered vertically and horizontally) */}
-              <Box
-                sx={{
-                  padding: 2,
-                  height: 120,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  width: '100%',
-                  overflow: 'hidden',
-                }}
-              >
-                {previewContent[file.name] || <Typography variant="body2" color="textSecondary">Loading Preview...</Typography>}
-              </Box>
-
-              {/* Eye and Edit Icons positioned at Top-Right corner */}
-              <Box sx={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 1 }}>
-                <IconButton
-                  color="default"
-                  onClick={() => handleFilePreview(file)}
-                  sx={{ fontSize: 20 }}
-                >
-                  <VisibilityIcon sx={{ color: 'black' }} />
-                </IconButton>
-
-                {/* Tooltip for Edit button when permission is denied */}
-                <Tooltip title="You don't have permission to edit this file" disableInteractive>
-                  <span>
-                    <IconButton
-                      color="default"
-                      sx={{ fontSize: 20 }}
-                      disabled={checkPermission(file.name)}
-                    >
-                      <EditIcon sx={{ color: 'black' }} />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </Box>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Modal for File Preview or Read */}
-      <Modal open={Boolean(fileContent)} onClose={handleModalClose}>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'white',
-            padding: 4,
-            borderRadius: 2,
-            boxShadow: 3,
-            maxWidth: '80vw',
-            maxHeight: '80vh',
-            width: '100%',
-            height: 'auto',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-          }}
-        >
-          <Typography variant="h5" sx={{ marginBottom: 2, fontWeight: 'bold', color: '#333' }}>
-            File Content
-          </Typography>
-          <Box sx={{ overflowY: 'auto', maxHeight: '70vh' }}>
-            {loadingContent ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <CircularProgress />
-              </Box>
-            ) : (
-              <Box sx={{ padding: 2 }}>{fileContent}</Box>
-            )}
-          </Box>
-          <Button variant="contained" color="primary" fullWidth onClick={handleModalClose} sx={{ marginTop: 2 }}>
-            Close
-          </Button>
-        </Box>
-      </Modal>
-    </Box>
+   <>
+   <div className="container">
+    <div className="row">
+      {files.map((file)=>(
+        <div className="col-sm-6 col-md-4 col-lg-3" style={{minWidth:"18rem",maxHeight:"17rem",textAlign:"center"}}>
+          <div className="card card-body">
+            {file.icon}
+            {file.name}
+          </div>
+        </div>
+      ))}
+    </div>
+   </div>
+   </>
   );
 };
 

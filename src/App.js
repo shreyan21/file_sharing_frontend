@@ -35,6 +35,7 @@ function App() {
         <ResponsiveAppBar />
         {usertoken && <FilePage />}
         <Routes>
+          <Route exact path='/file' element={<FilePage/>}/>
           <Route exact path='/signin' element={<SignInForm />} />
           <Route exact path='/signup' element={<SignupForm />} />
           <Route path='/signup/verify' element={<VerificationCodeForm />} />

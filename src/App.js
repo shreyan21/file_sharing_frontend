@@ -22,9 +22,10 @@ function App() {
       localStorage.setItem('usertoken', JSON.stringify(usertoken));
       localStorage.setItem('permission',JSON.stringify(permission))
     } else {
-      localStorage.removeItem('files')
+      localStorage.removeItem('file')
       localStorage.removeItem('usertoken');
       localStorage.removeItem('permission')
+      localStorage.removeItem('filedata')
     }
   }, [usertoken]);
   return (

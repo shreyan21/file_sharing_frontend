@@ -1,65 +1,109 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { UserContext } from "../contexts/usercontext.js";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import './FileDisplay.css';
 
 const FilePage = () => {
-  const [file, setFile] = useState([]);
-  const { usertoken } = useContext(UserContext);
+  const [fileList, setFileList] = useState([]);
+  const [fileUrl, setFileUrl] = useState(null);
+  const [fileType, setFileType] = useState(null);
+  const [fileContent, setFileContent] = useState(null);
 
-  // Memoize the getdetails function to avoid redefining it on every render
-  const getdetails = useCallback(async () => {
-    try {
-      const result = await fetch('http://localhost:3200/file/showfiles', {
-        method: 'GET',
-        headers: { 'Authorization': usertoken }
-      });
-      const data = await result.json();
-
-      // Ensure that the response contains the 'files' array
-      if (data && data.files) {
-        setFile(data.files);  // Update state with the fetched files
-      } else {
-        console.error('No files found in the response:', data);
-      }
-    } catch (e) {
-      console.error('Error fetching files:', e);
-    }
-  }, [usertoken]);  // usertoken as dependency for getdetails
-
-  // Fetch files when component mounts
   useEffect(() => {
-    getdetails();
-  }, [getdetails]);  // Only re-run when getdetails changes
+    // Fetch the list of files from the server
+    const fetchFiles = async () => {
+      try {
+        const response = await axios.get('http://localhost:3200/file/showfiles'); // Your API to fetch the file list
+        setFileList(response.data);
+      } catch (error) {
+        console.error('Error fetching files:', error);
+      }
+    };
+    fetchFiles();
+  }, []);
 
-  // Log the files after they are fetched
-  
+  const handleFileClick = async (fileName) => {
+    try {
+      const response = await fetch(`http://localhost:4000/showfiles/${fileName}`);
+      if (!response.ok) {
+        console.error('Failed to fetch file');
+        return;
+      }
+
+      const contentType = response.headers.get('Content-Type');
+
+      // Handle text files: Fetch as text
+      if (contentType === 'text/plain') {
+        const text = await response.json();  // Read the text content of the file
+        setFileContent(text);  // Set text content to be displayed
+        setFileUrl(null); // Clear file URL (no need to display as blob)
+      } else if (contentType.startsWith('image/')) {
+        // Handle image files
+        const blob = await response.blob();
+        const imageURL = URL.createObjectURL(blob);
+        setFileUrl(imageURL);
+        setFileType(contentType);
+        setFileContent(null); // Clear text content for non-text files
+      } else if (contentType === 'application/pdf') {
+        // Handle PDF files
+        const blob = await response.blob();
+        const pdfURL = URL.createObjectURL(blob);
+        setFileUrl(pdfURL);
+        setFileType(contentType);
+        setFileContent(null);
+      } else {
+        // Handle other files as a download or default behavior
+        const blob = await response.blob();
+        const fileURL = URL.createObjectURL(blob);
+        setFileUrl(fileURL);
+        setFileType(contentType);
+        setFileContent(null);
+      }
+    } catch (error) {
+      console.error('Error fetching file:', error);
+    }
+  };
+
   return (
-    <div className="container my-5">
-    <div className="row">
-      {/* Check if files are loaded */}
-      {file.length === 0 ? (
-        <p className="mt-5">Loading or no files available...</p>  // Display loading message if no files
-      ) : (
-        file.map((e, i) => (
-          <div className="col-md-4 " key={i}>
-            <div className="card shadow-sm h-100">
-             
-              {e.icon}
-              <div className="card-body d-flex flex-column">
-                <h5 className="card-title">{e.name}</h5>
-                <p className="card-text">
-                  <strong>Size:</strong> {e.size} KB <br />
-                  <strong>Last Modified:</strong> {(e.modifiedDate)} <br />
-                  <strong>Type:</strong> {e.type}
-                </p>
-                <a href="#" className="btn btn-primary mt-auto">View File</a>
-              </div>
+    <div className="file-container">
+      <h1>Files</h1>
+      <div className="file-list">
+        {fileList.length === 0 ? (
+          <p>No files available</p>
+        ) : (
+          fileList.map((file) => (
+            <div
+              key={file.name}
+              className="file-card"
+              onClick={() => handleFileClick(file.name)}
+            >
+              <p className="file-name">{file.name}</p>
+              {/* Add more visual indicators here (like icons) based on file type */}
             </div>
+          ))
+        )}
+      </div>
+
+      <div className="file-preview">
+        {/* Display file content */}
+        {fileContent && (
+          <div className="file-text">
+            <pre>{fileContent}</pre>
           </div>
-        ))
-      )}
+        )}
+        {fileUrl && fileType && (
+          <div className="file-media">
+            {/* Display images */}
+            {fileType.startsWith('image/') && <img src={fileUrl} alt="File" />}
+            
+            {/* Display PDFs */}
+            {fileType === 'application/pdf' && (
+              <iframe src={fileUrl} title="PDF Viewer" width="100%" height="500px"></iframe>
+            )}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
   );
-}
+};
 
 export default FilePage;

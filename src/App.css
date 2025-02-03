@@ -5,6 +5,20 @@
 .App-logo {
   pointer-events: none;
 }
+/* Account for navbar height */
+.main-content {
+  padding-top: 80px; /* Increased from 64px for better spacing */
+  min-height: calc(100vh - 80px);
+  background-color: #f5f6fa; /* Added background color */
+}
+/* If using a fixed navbar */
+.ResponsiveAppBar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1100; /* Increased z-index for better layering */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Added shadow for depth */
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -23,6 +37,20 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+
+/* ===== File Grid Adjustments ===== */
+.file-grid {
+  padding: 20px 2rem 2rem; /* Top padding reduced to account for main-content padding */
+  margin-top: 0; /* Removed duplicate margin */
+}
+
+/* ===== Viewer Container Adjustments ===== */
+.file-viewer-container {
+  padding-top: 30px; /* Reduced from 40px */
+  margin-top: 0;
+}
+
 
 .App-link {
   color: #61dafb;

@@ -7,44 +7,43 @@ import { UserContext } from './contexts/usercontext.js';
 import { Routes, Route } from 'react-router-dom';
 import VerificationCodeForm from './components/VerifyPage.jsx';
 import FilePage from './components/Files.jsx';
+import FileViewer from './components/FileViewer.jsx'; // New component
 import { PermissionContext } from './contexts/permissioncontext.js';
 
 function App() {
-  // Initialize user state from localStorage
-  const [usertoken, setUserToken] = useState(localStorage.getItem('usertoken') ? JSON.parse(localStorage.getItem('usertoken')) : null)
-  const [permission, setPermission] = useState(localStorage.getItem('permission')?JSON.parse(localStorage.getItem('permission')):[])
+  const [usertoken, setUserToken] = useState(localStorage.getItem('usertoken') ? JSON.parse(localStorage.getItem('usertoken')) : null);
+  const [permission, setPermission] = useState(localStorage.getItem('permission') ? JSON.parse(localStorage.getItem('permission')) : []);
+
   useEffect(() => {
-    // You can put any logic you want to trigger when usertoken changes
     console.log('User token has changed:', usertoken);
 
-    // Optionally save the token to localStorage whenever it changes
     if (usertoken) {
       localStorage.setItem('usertoken', JSON.stringify(usertoken));
-      localStorage.setItem('permission',JSON.stringify(permission))
+      localStorage.setItem('permission', JSON.stringify(permission));
     } else {
-      localStorage.removeItem('file')
+      localStorage.removeItem('file');
       localStorage.removeItem('usertoken');
-      localStorage.removeItem('permission')
-      localStorage.removeItem('filedata')
+      localStorage.removeItem('permission');
+      localStorage.removeItem('filedata');
     }
   }, [usertoken]);
+
   return (
     <>
       <UserContext.Provider value={{ usertoken, setUserToken }}>
         <PermissionContext.Provider value={{ permission, setPermission }}>
-       
-        <ResponsiveAppBar />
-        {usertoken && <FilePage />}
-        <Routes>
-          <Route exact path='/file' element={<FilePage/>}/>
-          <Route exact path='/signin' element={<SignInForm />} />
-          <Route exact path='/signup' element={<SignupForm />} />
-          <Route path='/signup/verify' element={<VerificationCodeForm />} />
-        </Routes>
-      </PermissionContext.Provider>
+          <ResponsiveAppBar />
+          <div className="main-content">  {/* Add this wrapper */}
+            <Routes>
+              <Route exact path="/file" element={<FilePage />} />
+              <Route path="/file/:filename" element={<FileViewer />} />
+              <Route exact path="/signin" element={<SignInForm />} />
+              <Route exact path="/signup" element={<SignupForm />} />
+              <Route path="/signup/verify" element={<VerificationCodeForm />} />
+            </Routes>
+          </div>
+        </PermissionContext.Provider>
       </UserContext.Provider>
-        
-    
     </>
   );
 }

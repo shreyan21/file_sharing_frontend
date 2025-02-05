@@ -87,7 +87,7 @@ function FilePage() {
           />
         ) : (
           <div className="empty-preview">
-            <p>Select a file to preview</p>
+            <p>Select a file to view it</p>
           </div>
         )}
       </div>

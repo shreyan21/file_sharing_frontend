@@ -1,38 +1,45 @@
+/* Files.css - Enhanced Version */
 .file-page-container {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 2rem;
-  height: calc(100vh - 64px);
+  grid-template-columns: minmax(250px, 300px) 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - 80px);
   padding: 1rem;
+  background: #f5f7fa;
 }
 
 .file-list-section {
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   padding: 1rem;
   overflow-y: auto;
-}
-
-.file-preview-section {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  padding: 1.5rem;
+  position: relative;
 }
 
 .file-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
 .file-card {
-  border: 1px solid #eee;
+  border: 1px solid #e3e8ef;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.file-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  border-color: #3498db;
 }
 
 .file-card.selected {
@@ -40,23 +47,56 @@
   background: #f8fafd;
 }
 
-.file-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+.file-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  color: #64748b;
+}
+
+.file-info {
+  width: 100%;
+}
+
+.filename {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+}
+
+.file-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.file-preview-section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .empty-preview {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  color: #666;
+  background: #f8fafd;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {
   .file-page-container {
     grid-template-columns: 1fr;
     height: auto;
+    gap: 1rem;
   }
   
   .file-list-section {
@@ -64,7 +104,29 @@
   }
   
   .file-preview-section {
-    height: auto;
     min-height: 50vh;
+  }
+  
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  
+  .file-card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-page-container {
+    padding: 0.5rem;
+  }
+  
+  .filename {
+    font-size: 0.8rem;
+  }
+  
+  .file-meta {
+    flex-direction: column;
+    gap: 0.25rem;
   }
 }

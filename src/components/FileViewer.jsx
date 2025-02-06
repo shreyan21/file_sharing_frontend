@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { UserContext } from '../contexts/usercontext';
+import { UserContext } from '../contexts/usercontext.js';
 import './FileViewer.css';
 
 function FileViewer({ fileData, onRename }) {

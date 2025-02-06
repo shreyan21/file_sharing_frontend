@@ -13,9 +13,9 @@ function FilePage() {
     const fetchFiles = async () => {
       try {
         const response = await axios.get('http://localhost:3200/file/showfiles', {
-          headers: { Authorization: `Bearer ${usertoken}` }
+          headers: { Authorization:usertoken }
         });
-        setFiles(response.data);
+        setFiles(response.data.fileData);
       } catch (error) {
         console.error('Error fetching files:', error);
       }
@@ -29,7 +29,7 @@ function FilePage() {
         `http://localhost:3200/file/showfiles/${filename}`,
         {
           responseType: 'blob',
-          headers: { Authorization: `Bearer ${usertoken}` }
+          headers: { Authorization: usertoken }
         }
       );
       

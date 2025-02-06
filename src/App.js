@@ -12,7 +12,7 @@ import { PermissionContext } from './contexts/permissioncontext.js';
 
 function App() {
   const [usertoken, setUserToken] = useState(localStorage.getItem('usertoken') ? JSON.parse(localStorage.getItem('usertoken')) : null);
-  const [permission, setPermission] = useState(localStorage.getItem('permission') ? JSON.parse(localStorage.getItem('permission')) : []);
+  const [permission, setPermission] = useState(localStorage.getItem('permission') ? JSON.parse(localStorage.getItem('permission')) :[]);
 
   useEffect(() => {
     console.log('User token has changed:', usertoken);
@@ -21,10 +21,8 @@ function App() {
       localStorage.setItem('usertoken', JSON.stringify(usertoken));
       localStorage.setItem('permission', JSON.stringify(permission));
     } else {
-      localStorage.removeItem('file');
       localStorage.removeItem('usertoken');
       localStorage.removeItem('permission');
-      localStorage.removeItem('filedata');
     }
   }, [usertoken]);
 

@@ -30,7 +30,8 @@ function FileViewer({ fileData, onRename }) {
       const response = await axios.put(
         `http://localhost:3200/file/rename/${fileData.filename}`,
         { newName: newFilename },
-        { headers: { Authorization: usertoken} }
+        { headers: { Authorization: usertoken,'Content-Type':'application/json'} },
+       {body:JSON.stringify(newFilename)}
       );
 
       if (response.data.message === 'File renamed successfully') {

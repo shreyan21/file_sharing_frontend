@@ -32,8 +32,9 @@ function App() {
         <PermissionContext.Provider value={{ permission, setPermission }}>
           <ResponsiveAppBar />
           <div className="main-content">  {/* Add this wrapper */}
+            {usertoken&&<FilePage/>}
             <Routes>
-              <Route exact path="/file" element={<FilePage />} />
+              {/* <Route exact path="/file" element={<FilePage />} /> */}
               <Route path="/file/:filename" element={<FileViewer />} />
               <Route exact path="/signin" element={<SignInForm />} />
               <Route exact path="/signup" element={<SignupForm />} />

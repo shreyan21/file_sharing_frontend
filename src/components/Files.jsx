@@ -124,7 +124,7 @@ function FilePage() {
                 <h3 className="filename">{file.filename}</h3>
                 <div className="file-meta">
                   <span className="file-type">{file.type}</span>
-                  <span className="file-size">{(file.size / 1024).toFixed(2)}KB</span>
+                  <span className="file-size">{file.size>= 1048576?((file.size/1048576).toFixed(2)):  (file.size / 1024).toFixed(2)}{file.size>=1048576?"MB":"KB"}</span>
                 </div>
               </div>
               <button

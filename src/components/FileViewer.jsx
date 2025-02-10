@@ -30,8 +30,8 @@ function FileViewer({ fileData, onRename }) {
       const response = await axios.put(
         `http://localhost:3200/file/rename/${fileData.filename}`,
         { newName: newFilename },
-        { headers: { Authorization: usertoken,'Content-Type':'application/json'} },
-       {body:JSON.stringify(newFilename)}
+        { headers: { Authorization: usertoken, 'Content-Type': 'application/json' } },
+        { body: JSON.stringify(newFilename) }
       );
 
       if (response.data.message === 'File renamed successfully') {
@@ -91,9 +91,11 @@ function FileViewer({ fileData, onRename }) {
               >
                 Rename
               </button>
-              <button className="download-button" onClick={handleDownload}>
-                Download
-              </button>
+              {
+                fileData.canDownload&&   <button className="download-button" onClick={handleDownload}>
+                  Download
+                </button>
+              }
             </div>
           </>
         )}
@@ -130,13 +132,15 @@ function FileViewer({ fileData, onRename }) {
         {!['image/', 'video/', 'audio/', 'application/pdf'].some((t) =>
           fileType.startsWith(t)
         ) && (
-          <div className="unsupported-file">
-            <p>Preview not available for this file type</p>
-            <button className="download-button" onClick={handleDownload}>
-              Download File
-            </button>
-          </div>
-        )}
+            <div className="unsupported-file">
+              <p>Preview not available for this file type</p>
+              {/* {
+                candownload&&
+              <button className="download-button" onClick={handleDownload}>
+                Download File
+              </button>} */}
+            </div>
+          )}
       </div>
     </div>
   );

@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode'; // Corrected import
+import { jwtDecode } from 'jwt-decode'; // Corrected import
 import FileViewer from './FileViewer.jsx';
 import './Files.css';
 import { FaTrashAlt } from 'react-icons/fa'; // Importing delete icon
 import { UserContext } from '../contexts/usercontext.js';
+import { PermissionContext } from '../contexts/permissioncontext.js';
 
 function FilePage() {
   const [files, setFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const { usertoken } = useContext(UserContext); // Assuming usertoken is passed via context
-
   // Function to decode the JWT and extract the email
+  const { permission, setPermission } = useContext(PermissionContext)
   const getUserEmailFromToken = () => {
     try {
       const decodedToken = jwtDecode(usertoken); // Decode the JWT to extract user info
@@ -41,11 +42,14 @@ function FilePage() {
 
         // Add delete permission logic based on matching uploaded_by in can_delete
         const filesWithPermissions = response.data.fileData.map(file => {
+          const permissions = response.data.permission.find(p => p.file_name === file.filename) || {};
           const canDelete = canDeleteFiles.includes(file.filename); // Check if the file is in can_delete list for the user
+
 
           return {
             ...file,
-            canDelete // Add canDelete property based on the logic above
+            canDelete,// Add canDelete property based on the logic above
+            canDownload: permissions.can_download ? (permissions.can_download.trim() === "YES" ? true : false) : false
           };
         });
 
@@ -58,7 +62,7 @@ function FilePage() {
     fetchFiles();
   }, [usertoken]);
 
-  const handleFileClick = async (filename) => {
+  const handleFileClick = async (filename,canDownload) => {
     try {
       const response = await axios.get(
         `http://localhost:3200/file/showfiles/${filename}`,
@@ -67,17 +71,19 @@ function FilePage() {
           headers: { Authorization: usertoken }
         }
       );
-      
-      const blob = new Blob([response.data], { 
-        type: response.headers['content-type'] 
+
+      const blob = new Blob([response.data], {
+        type: response.headers['content-type']
       });
-      
+
+
       setSelectedFile({
         filename,
+        canDownload,
         url: URL.createObjectURL(blob),
         type: response.headers['content-type']
       });
-      
+
     } catch (error) {
       console.error('Error fetching file:', error);
     }
@@ -96,10 +102,10 @@ function FilePage() {
   };
 
   const handleRenameSuccess = (oldName, newName) => {
-    setFiles(files.map(file => 
-      file.filename === oldName ? {...file, filename: newName} : file
+    setFiles(files.map(file =>
+      file.filename === oldName ? { ...file, filename: newName } : file
     ));
-    setSelectedFile(prev => prev ? {...prev, filename: newName} : null);
+    setSelectedFile(prev => prev ? { ...prev, filename: newName } : null);
   };
 
   return (
@@ -108,10 +114,10 @@ function FilePage() {
         <h2>Your Files</h2>
         <div className="file-grid">
           {files.map((file) => (
-            <div 
-              key={file.filename} 
+            <div
+              key={file.filename}
               className={`file-card ${selectedFile?.filename === file.filename ? 'selected' : ''}`}
-              onClick={() => handleFileClick(file.filename)}
+              onClick={() => handleFileClick(file.filename,file.canDownload)}
             >
               <div className="file-icon">{file.icon}</div>
               <div className="file-info">
@@ -121,11 +127,11 @@ function FilePage() {
                   <span className="file-size">{(file.size / 1024).toFixed(2)}KB</span>
                 </div>
               </div>
-              <button 
-                className="delete-btn" 
-                onClick={(e) => { 
+              <button
+                className="delete-btn"
+                onClick={(e) => {
                   e.stopPropagation(); // Prevents file preview from opening on delete click
-                  handleDeleteFile(file.filename); 
+                  handleDeleteFile(file.filename);
                 }}
                 disabled={!file.canDelete} // Disable delete button if user doesn't have permission
               >
@@ -138,8 +144,9 @@ function FilePage() {
 
       <div className="file-preview-section">
         {selectedFile ? (
-          <FileViewer 
-            fileData={selectedFile} 
+          <FileViewer
+            fileData={selectedFile}
+          
             onRename={handleRenameSuccess}
           />
         ) : (
